@@ -19,7 +19,7 @@ backend practice
     BullMQ -.-> ORM
 ```
 
-## 스키마
+## 데이터베이스 설계
 ```mermaid
   erDiagram
     Project {
