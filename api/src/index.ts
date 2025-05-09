@@ -1,6 +1,8 @@
 import server from './server' // Fastify 서버 인스턴스
 import dotenv from 'dotenv'
 
+export { AppRouter } from './router'
+
 const PORT = parseInt(dotenv.config().parsed?.PORT || '3001', 10)
 const HOST = process.env.HOST || '0.0.0.0' // 모든 IP에서 접속 허용
 

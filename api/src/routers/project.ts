@@ -20,7 +20,7 @@ export const projectRouter = router({
       return newProject
     }),
 
-  // 프로젝트 목록 조회 쿼리 (테스트용)
+  // 프로젝트 목록 조회 쿼리
   list: publicProcedure.query(async ({ ctx }) => {
     const projects = await ctx.prisma.project.findMany()
     return projects

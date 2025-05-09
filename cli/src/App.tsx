@@ -1,9 +1,10 @@
 import { useState, FormEvent, ChangeEvent, useEffect, useRef } from 'react'
 import './App.css'
+import { trpcClient } from './utils/trpc'
 
 interface OutputLine {
   id: string
-  type: 'command' | 'response' | 'error' | 'system'
+  type: 'command' | 'response' | 'error' | 'system' | 'loading' // 'loading' 타입 추가
   text: string
 }
 
@@ -32,8 +33,6 @@ const suggestedCommands = [
     description: '특정 작업의 상태를 확인합니다. (예: job status 789)',
   },
   { name: 'job list', description: '작업 목록을 보여줍니다.' },
-  // 여기에 더 많은 관련 명령어를 추가할 수 있습니다.
-  // 예: geom list --project <id>, mesh create --geometry <id> 등
 ]
 
 function App() {
@@ -41,7 +40,6 @@ function App() {
   const [output, setOutput] = useState<OutputLine[]>([])
   const outputEndRef = useRef<HTMLDivElement>(null)
 
-  // 초기 환영 메시지 설정
   useEffect(() => {
     setOutput([
       {
@@ -55,7 +53,7 @@ function App() {
         text: "사용 가능한 명령어를 보려면 'help'를 입력하세요.",
       },
     ])
-  }, []) // 마운트 시 한 번만 실행
+  }, [])
 
   useEffect(() => {
     outputEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -65,7 +63,8 @@ function App() {
     setInput(e.target.value)
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  // handleSubmit 함수를 async로 변경합니다.
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const commandText = input.trim()
 
@@ -73,54 +72,141 @@ function App() {
       return
     }
 
-    const currentOutput = [
-      ...output,
-      { id: crypto.randomUUID(), type: 'command', text: `$ ${commandText}` },
-    ]
-
-    const [command] = commandText.toLowerCase().split(' ') // 명령어 부분만 추출 (인자는 아직 사용 안함)
-
-    switch (command) {
-      case 'help':
-        currentOutput.push({
-          id: crypto.randomUUID(),
-          type: 'system',
-          text: '사용 가능한 명령어:',
-        })
-        suggestedCommands.forEach(cmd => {
-          currentOutput.push({
-            id: crypto.randomUUID(),
-            type: 'system',
-            text: `  ${cmd.name} - ${cmd.description}`,
-          })
-        })
-        break
-      case 'clear':
-        setOutput([])
-        setInput('')
-        return
-      case 'date':
-        currentOutput.push({
-          id: crypto.randomUUID(),
-          type: 'response',
-          text: new Date().toLocaleString(),
-        })
-        break
-      // project, job 등의 명령어는 아직 실제 액션이 없으므로,
-      // 'help'를 통해 목록만 보여주고, 입력 시 '알 수 없는 명령어'로 처리됩니다.
-      // tRPC 연동 후 이 부분에 각 명령어에 대한 case를 추가하여 기능을 구현합니다.
-      default:
-        // 'project' 또는 'job' 같은 키워드가 포함된 경우, 아직 구현되지 않았음을 안내할 수도 있습니다.
-        // 여기서는 일단 모든 미구현 명령어를 '알 수 없는 명령어'로 처리합니다.
-        currentOutput.push({
-          id: crypto.randomUUID(),
-          type: 'error',
-          text: `알 수 없는 명령어: ${commandText}. 'help'를 입력하여 명령어 목록을 확인하세요.`,
-        })
+    // 사용자가 입력한 명령어를 먼저 출력에 추가
+    const commandOutputLine = {
+      id: crypto.randomUUID(),
+      type: 'command' as const,
+      text: `$ ${commandText}`,
     }
+    setOutput(prevOutput => [...prevOutput, commandOutputLine])
+    setInput('') // 입력창 즉시 비우기
 
-    setOutput(currentOutput as OutputLine[])
-    setInput('')
+    const [command, ...args] = commandText.toLowerCase().split(' ')
+    const subcommand = args[0] // project list에서 'list', project create name에서 'create'
+    const commandValue = args.slice(1).join(' ') // project create name에서 'name' 부분
+
+    // 로딩 메시지를 위한 임시 ID
+    const loadingId = crypto.randomUUID()
+
+    try {
+      switch (command) {
+        case 'help':
+          setOutput(prevOutput => [
+            ...prevOutput,
+            {
+              id: crypto.randomUUID(),
+              type: 'system',
+              text: '사용 가능한 명령어:',
+            },
+            ...suggestedCommands.map(cmd => ({
+              id: crypto.randomUUID(),
+              type: 'system' as const,
+              text: `  ${cmd.name} - ${cmd.description}`,
+            })),
+          ])
+          break
+        case 'clear':
+          setOutput([])
+          return // clear는 여기서 바로 종료
+        case 'date':
+          setOutput(prevOutput => [
+            ...prevOutput,
+            {
+              id: crypto.randomUUID(),
+              type: 'response',
+              text: new Date().toLocaleString(),
+            },
+          ])
+          break
+        case 'project':
+          if (subcommand === 'list') {
+            setOutput(prevOutput => [
+              ...prevOutput,
+              {
+                id: loadingId,
+                type: 'loading',
+                text: '프로젝트 목록을 가져오는 중...',
+              },
+            ])
+            const projects = await trpcClient.project.list.query()
+            const projectLines: OutputLine[] =
+              projects.length > 0
+                ? projects.map(p => ({
+                    id: String(p.id),
+                    type: 'response' as const,
+                    text: `  ID: ${p.id}, 이름: ${p.name}`,
+                  }))
+                : [
+                    {
+                      id: crypto.randomUUID(),
+                      type: 'response' as const,
+                      text: '생성된 프로젝트가 없습니다.',
+                    },
+                  ]
+
+            setOutput(prevOutput =>
+              prevOutput
+                .filter(line => line.id !== loadingId)
+                .concat(projectLines)
+            )
+          } else if (subcommand === 'create' && commandValue) {
+            setOutput(prevOutput => [
+              ...prevOutput,
+              {
+                id: loadingId,
+                type: 'loading',
+                text: `'${commandValue}' 프로젝트 생성 중...`,
+              },
+            ])
+            const newProject = await trpcClient.project.create.mutate({
+              name: commandValue,
+            })
+            setOutput(prevOutput =>
+              prevOutput
+                .filter(line => line.id !== loadingId)
+                .concat({
+                  id: String(newProject.id),
+                  type: 'response' as const,
+                  text: `프로젝트 생성됨: ID: ${newProject.id}, 이름: ${newProject.name}`,
+                })
+            )
+          } else {
+            setOutput(prevOutput => [
+              ...prevOutput,
+              {
+                id: crypto.randomUUID(),
+                type: 'error' as const,
+                text: "잘못된 'project' 명령어입니다. 사용법: project list | project create <name>",
+              },
+            ])
+          }
+          break
+        default:
+          setOutput(prevOutput => [
+            ...prevOutput,
+            {
+              id: crypto.randomUUID(),
+              type: 'error' as const,
+              text: `알 수 없는 명령어: ${commandText}. 'help'를 입력하세요.`,
+            },
+          ])
+      }
+    } catch (error: unknown) {
+      // tRPC 호출 오류 또는 기타 예외 처리
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '알 수 없는 오류가 발생했습니다.'
+      setOutput(prevOutput =>
+        prevOutput
+          .filter(line => line.id !== loadingId)
+          .concat({
+            id: crypto.randomUUID(),
+            type: 'error' as const,
+            text: `오류: ${errorMessage}`,
+          })
+      )
+    }
   }
 
   return (
