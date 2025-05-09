@@ -1,42 +1,71 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+}
+/* 전체 컨테이너 */
+.web-cli-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 전체 화면 높이 */
+  background-color: #1e1e1e; /* 어두운 배경색 */
+  color: #d4d4d4; /* 기본 글자색 */
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace; /* 고정폭 글꼴 */
+  font-size: 14px;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* 출력 영역 */
+.output-area {
+  flex-grow: 1; /* 남은 공간 모두 차지 */
+  overflow-y: auto; /* 내용 많으면 스크롤 */
+  padding-bottom: 10px; /* 하단 여백 */
+  line-height: 1.5;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.line {
+  white-space: pre-wrap; /* 줄바꿈 및 공백 유지 */
+  word-break: break-all; /* 긴 단어 줄바꿈 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.line.command {
+  color: #569cd6; /* 명령어 색상 (예: 파란색 계열) */
+}
+.line.command .line-content::before {
+  /* content: '$ ';  프롬프트는 input 영역에만 표시하거나, 필요시 여기서도 스타일링 */
 }
 
-.card {
-  padding: 2em;
+.line.response {
+  color: #d4d4d4; /* 일반 응답 색상 */
 }
 
-.read-the-docs {
-  color: #888;
+.line.error {
+  color: #f44747; /* 에러 메시지 색상 (예: 빨간색 계열) */
+}
+
+.line.system {
+  color: #6a9955; /* 시스템 메시지 색상 (예: 초록색 계열) */
+}
+
+/* 입력 영역 */
+.input-area {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #333; /* 구분선 */
+  padding-top: 5px;
+}
+
+.prompt {
+  margin-right: 8px;
+  color: #6a9955; /* 프롬프트 색상 (예: 초록색 계열) */
+}
+
+.input-area input[type='text'] {
+  flex-grow: 1;
+  background-color: transparent; /* 배경 투명 */
+  border: none; /* 테두리 없음 */
+  color: #d4d4d4; /* 입력 글자색 */
+  font-family: inherit; /* 부모 글꼴 상속 */
+  font-size: inherit; /* 부모 글꼴 크기 상속 */
+  outline: none; /* 포커스 시 외곽선 없음 */
+  padding: 5px 0;
 }
