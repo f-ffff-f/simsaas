@@ -57,7 +57,7 @@
     Project ||--o{ Geometry : "contains"
     Geometry ||--o{ Mesh : "generates"
     Mesh ||--o{ Job : "uses"
-    Job }o--|| Result : "produces"
+    Job ||--o| Result : "produces"
     %% Job can have 0 or 1 Result; Result must have 1 Job
 
     %% --- Enum Definitions (as comments, as Mermaid ERD doesn't directly render Enums within diagram) ---
