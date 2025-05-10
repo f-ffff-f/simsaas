@@ -3,16 +3,13 @@
     "version": "1.0.0",
     "description": "SimSaaS API Server",
     "main": "dist/index.js",
-    "types": "dist/router.d.ts",
+    "types": "dist/index.d.ts",
     "scripts": {
         "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/index.ts",
         "build": "tsc",
         "start": "node dist/index.js",
         "lint": "eslint . --ext .ts"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
     "dependencies": {
         "@fastify/cors": "^9.0.1",
         "@prisma/client": "^5.22.0",
@@ -22,12 +19,7 @@
         "zod": "^3.24.4"
     },
     "devDependencies": {
-        "@types/node": "^20.17.46",
-        "eslint": "^8.57.1",
         "pino-pretty": "^13.0.0",
-        "prisma": "5.22.0",
-        "ts-node-dev": "^2.0.0",
-        "tsconfig-paths": "^4.2.0",
-        "typescript": "^5.8.3"
+        "tsconfig-paths": "^4.2.0"
     }
 }

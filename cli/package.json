@@ -1,0 +1,28 @@
+{
+    "name": "cli",
+    "version": "0.1.0",
+    "description": "SimSaaS cli",
+    "type": "module",
+    "main": "dist/index.js",
+    "bin": {
+        "simsaas-cli": "./dist/index.js"
+    },
+    "scripts": {
+        "dev": "tsx src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "lint": "eslint . --ext .ts",
+        "cli": "node dist/index.js"
+    },
+    "keywords": [],
+    "dependencies": {
+        "@trpc/client": "^10.45.2",
+        "api": "workspace:^",
+        "commander": "^12.1.0",
+        "dotenv": "^16.4.5"
+    },
+    "devDependencies": {
+        "@types/commander": "^2.5.0",
+        "tsx": "^4.16.2"
+    }
+}
