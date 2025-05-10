@@ -1,6 +1,6 @@
 // api/src/router.ts
 import { router } from '@/trpc'
-import { projectRouter } from '@/routers/project' // 방금 만든 projectRouter 임포트
+import { projectRouter } from '@/routers/project'
 
 // 여러 라우터들을 여기에 병합합니다.
 export const appRouter = router({
