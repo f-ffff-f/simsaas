@@ -64,13 +64,13 @@ importers:
         specifier: ^10.45.2
         version: 10.45.2(@trpc/server@10.45.2)
       api:
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../api
       commander:
         specifier: ^12.1.0
         version: 12.1.0
       dotenv:
-        specifier: ^16.4.5
+        specifier: ^16.5.0
         version: 16.5.0
     devDependencies:
       '@types/commander':

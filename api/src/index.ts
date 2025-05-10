@@ -1,4 +1,4 @@
-import server from './server' // Fastify 서버 인스턴스
+import server from '@/server' // Fastify 서버 인스턴스
 import dotenv from 'dotenv'
 
 export { AppRouter } from './router'
