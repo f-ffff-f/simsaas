@@ -4,7 +4,7 @@
     "description": "SimSaaS cli",
     "main": "dist/index.js",
     "bin": {
-        "simsaas-cli": "./dist/index.js"
+        "simsaas-cli": "./src/index.ts"
     },
     "scripts": {
         "dev": "tsx src/index.ts",
