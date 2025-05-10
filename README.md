@@ -1,25 +1,28 @@
 # Simulation-as-a-Service
+
 backend practice
 
 ## 설계
+
 ```mermaid
   flowchart TD
     Runtime["Node.js 20 LTS"] --> WebFramework["Fastify v5"]
     WebFramework --> TRPC["tRPC"]
     TRPC --> ORM["Prisma 5"]
     ORM --> DB["PostgreSQL 16"]
-    
+
     CLI["Commander"] --> TRPC_Client["tRPC Client"]
     TRPC_Client --> TRPC
-    
+
     WebFramework --> BullMQ["BullMQ"]
     BullMQ --> Redis["Redis 7"]
-    
+
     CLI -.-> WebFramework
     BullMQ -.-> ORM
 ```
 
 ## 데이터베이스 설계
+
 ```mermaid
   erDiagram
     Project {
@@ -69,3 +72,15 @@ backend practice
     %%  SUCCESS
     %% }
 ```
+
+## 사용법
+
+```sh
+pnpm link --global ./cli
+```
+
+이제 터미널에서 `simsaas-cli` 명령어를 사용할 수 있습니다.
+
+- ### Command
+
+  - **WIP**
