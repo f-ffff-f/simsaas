@@ -1,7 +1,5 @@
 # Simulation-as-a-Service
 
-backend practice
-
 ## 설계
 
 ```mermaid
