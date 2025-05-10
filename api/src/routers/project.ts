@@ -22,7 +22,11 @@ export const projectRouter = router({
 
   // 프로젝트 목록 조회 쿼리
   list: publicProcedure.query(async ({ ctx }) => {
-    const projects = await ctx.prisma.project.findMany()
+    const projects = await ctx.prisma.project.findMany({
+      include: {
+        geometries: true,
+      },
+    })
     return projects
   }),
 })

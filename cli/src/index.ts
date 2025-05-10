@@ -28,11 +28,9 @@ program
         return
       }
 
-      console.log('\n=== 프로젝트 목록 ===')
+      console.log('\n=== project list ===')
       projects.forEach(project => {
-        // project 객체에 id와 name이 있다고 가정합니다.
-        // 실제 AppRouter의 project.list 반환 타입에 맞춰야 합니다.
-        console.log(`  ID: ${project.id}, 이름: ${project.name}`)
+        console.log(project)
       })
       console.log('====================\n')
     } catch (error: any) {
