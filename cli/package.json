@@ -18,7 +18,8 @@
         "@trpc/client": "^10.45.2",
         "api": "workspace:*",
         "commander": "^12.1.0",
-        "dotenv": "^16.5.0"
+        "dotenv": "^16.5.0",
+        "superjson": "1.13.3"
     },
     "devDependencies": {
         "@types/commander": "^2.5.0",

@@ -1,7 +1,8 @@
 // api/src/trpc.ts
+import prisma from '@/lib/prisma'
 import { initTRPC } from '@trpc/server'
 import type { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify'
-import prisma from '@/lib/prisma' // Prisma Client 인스턴스 가져오기
+import superjson from 'superjson'
 
 // 1. tRPC 컨텍스트 정의
 //    요청마다 생성되며, 모든 tRPC 프로시저에서 접근 가능합니다.
@@ -18,7 +19,9 @@ export async function createContext({ req, res }: CreateFastifyContextOptions) {
 export type Context = Awaited<ReturnType<typeof createContext>>
 
 // 2. tRPC 초기화
-const t = initTRPC.context<Context>().create()
+const t = initTRPC.context<Context>().create({
+  transformer: superjson,
+})
 
 // 3. 재사용 가능한 컴포넌트 export
 export const router = t.router // 라우터 생성 함수
