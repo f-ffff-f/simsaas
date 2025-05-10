@@ -1,5 +1,5 @@
 import { Command, OptionValues } from 'commander'
-import { trpcClient } from '@/utils/trpc' // index.ts에서 사용하는 trpcClient 경로와 동일하게 설정
+import { trpcClient } from '@/utils/trpc'
 
 // 'job list' 명령어의 액션 핸들러
 async function listJobsAction() {

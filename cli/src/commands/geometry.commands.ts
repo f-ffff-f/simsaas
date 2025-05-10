@@ -1,5 +1,5 @@
 import { Command, OptionValues } from 'commander'
-import { trpcClient } from '@/utils/trpc' // 현재 index.ts에서 사용하는 trpcClient 경로와 동일하게 설정
+import { trpcClient } from '@/utils/trpc'
 
 // Action handler for 'geometry create'
 async function createGeometryAction(

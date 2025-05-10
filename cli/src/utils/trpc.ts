@@ -7,7 +7,11 @@ import superjson from 'superjson'
 dotenv.config()
 
 // API 서버 URL (환경 변수 등으로 설정하는 것이 좋습니다)
-const API_URL = process.env.API_URL || 'http://localhost:3001/trpc'
+const API_URL = process.env.API_URL
+
+if (!API_URL) {
+  throw new Error('API_URL is not defined')
+}
 
 // 명시적 타입 지정으로 타입 추론 문제 해결
 export const trpcClient = createTRPCProxyClient<AppRouter>({

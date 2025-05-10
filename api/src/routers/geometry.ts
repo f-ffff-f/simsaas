@@ -1,4 +1,3 @@
-import { z } from 'zod'
 import { publicProcedure, router } from '@/trpc' // 경로 별칭 사용 중
 import {
   createGeometryInputSchema,
@@ -7,6 +6,7 @@ import {
   deleteGeometryInputSchema,
 } from '@/schemas/geometry.schema' // 경로 별칭 사용 중
 
+// 결과: baseURL/trpc/geometry/...
 export const geometryRouter = router({
   /**
    * 새로운 지오메트리를 특정 프로젝트에 추가합니다.
