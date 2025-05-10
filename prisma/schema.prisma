@@ -48,7 +48,7 @@ model Job {
   startedAt  DateTime?
   finishedAt DateTime?
   mesh       Mesh      @relation(fields: [meshId], references: [id], onDelete: Cascade) // Mesh와의 관계 정의. Mesh 삭제 시 연관 Job도 삭제
-  result     Result? // Job은 하나의 Result를 가질 수 있음 (1:1 관계)
+  result     Result? // Job은 하나 혹은 0개의 Result를 가질 수 있음 (1:0 or 1:1 관계)
 
   @@map("jobs")
 }

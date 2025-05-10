@@ -1,3 +1,4 @@
+import { registerJobCommands } from '@/commands/job.commands'
 import { registerProjectCommands } from '@/commands/project.commands'
 import { Command } from 'commander'
 
@@ -10,7 +11,7 @@ program
 
 // 명령어 그룹 등록
 registerProjectCommands(program)
-// registerJobCommands(program); // 나중에 추가될 Job 명령어 그룹
+registerJobCommands(program) // 나중에 추가될 Job 명령어 그룹
 
 async function main() {
   await program.parseAsync(process.argv)

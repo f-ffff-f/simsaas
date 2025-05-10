@@ -17,15 +17,14 @@ export const jobRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { meshId } = input
 
-      // TODO: Mesh ID가 DB에 존재하는지 검증하는 로직
-      //   const mesh = await ctx.prisma.mesh.findUnique({
-      //     where: {
-      //       id: meshId,
-      //     },
-      //   })
-      //   if (!mesh) {
-      //     throw new Error('Mesh not found')
-      //   }
+      const mesh = await ctx.prisma.mesh.findUnique({
+        where: {
+          id: meshId,
+        },
+      })
+      if (!mesh) {
+        throw new Error('Mesh not found')
+      }
 
       const newJob = await ctx.prisma.job.create({
         data: {
