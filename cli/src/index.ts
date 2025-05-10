@@ -1,17 +1,52 @@
 // cli/src/index.ts
 import { trpcClient } from '@/utils/trpc'
-import { Command } from 'commander'
-import dotenv from 'dotenv'
-
-// .env 파일 로드 (API_URL 등 환경변수 사용 위함)
-dotenv.config()
+import { Command, OptionValues } from 'commander'
 
 const program = new Command()
 
 program
   .name('simsaas-cli')
   .description('SimSaaS 프로젝트 관리를 위한 CLI 도구')
-  .version('0.1.0') // cli/package.json의 버전과 일치시키는 것이 좋습니다.
+  .version('0.1.0')
+
+// 'project create' 명령어 정의
+program
+  .command('project-create <name>') // <name>은 필수 인자
+  .alias('pc')
+  .description('새로운 프로젝트를 생성합니다. <name>은 필수입니다.')
+  .action(async (name: string, options: OptionValues, command: Command) => {
+    if (typeof name !== 'string' || name.trim() === '') {
+      console.error('오류: 유효한 프로젝트 이름(문자열)을 입력해야 합니다.')
+      command.help({ error: true })
+      return
+    }
+
+    const projectName = name.trim()
+
+    console.log(`'${projectName}' 프로젝트를 생성하는 중입니다...`)
+    try {
+      const newProject = await trpcClient.project.create.mutate({
+        name: projectName,
+      })
+
+      console.log('\n=== 프로젝트 생성 완료 ===')
+      console.log(newProject)
+      console.log('========================\n')
+    } catch (error: any) {
+      console.error(`'${projectName}' 프로젝트 생성 중 오류가 발생했습니다:`)
+      if (error.data?.zodError?.fieldErrors) {
+        console.error(
+          '입력값 오류:',
+          JSON.stringify(error.data.zodError.fieldErrors, null, 2)
+        )
+      } else if (error.message) {
+        console.error(error.message)
+      } else {
+        console.error(JSON.stringify(error, null, 2))
+      }
+      process.exit(1)
+    }
+  })
 
 // 'project list' 명령어 정의
 program
@@ -35,7 +70,6 @@ program
       console.log('====================\n')
     } catch (error: any) {
       console.error('프로젝트 목록을 가져오는 중 오류가 발생했습니다:')
-      // tRPC 에러 객체 구조에 따라 좀 더 상세한 오류 메시지 파싱 가능
       if (error.data?.zodError?.fieldErrors) {
         console.error(
           '입력값 오류:',
@@ -49,8 +83,6 @@ program
       process.exit(1) // 오류 발생 시 비정상 종료
     }
   })
-
-// 여기에 'project create <name>' 등 다른 명령어들을 추가할 수 있습니다.
 
 async function main() {
   await program.parseAsync(process.argv)

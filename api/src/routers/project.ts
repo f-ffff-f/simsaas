@@ -24,7 +24,7 @@ export const projectRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     const projects = await ctx.prisma.project.findMany({
       include: {
-        geometries: true,
+        geometries: true, // relation 추가
       },
     })
     return projects
