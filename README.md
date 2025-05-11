@@ -3,20 +3,50 @@
 ## 설계
 
 ```mermaid
-  flowchart TD
-    Runtime["Node.js 20 LTS"] --> WebFramework["Fastify v5"]
-    WebFramework --> TRPC["tRPC"]
-    TRPC --> ORM["Prisma 5"]
-    ORM --> DB["PostgreSQL 16"]
+flowchart TD
+    subgraph SimSaaS_Application_Server_Node_js_Process ["애플리케이션 서버"]
+        direction TB
+        Fastify["Fastify 웹 서버"]
 
-    CLI["Commander"] --> TRPC_Client["tRPC Client"]
-    TRPC_Client --> TRPC
+        subgraph API_and_Core_Logic_In_Fastify ["API 및 핵심 로직"]
+            direction LR
+            TRPC["tRPC API 엔드포인트"]
+            Prisma["Prisma ORM"]
 
-    WebFramework --> BullMQ["BullMQ"]
-    BullMQ --> Redis["Redis 7"]
+            subgraph BullMQ_Integration_App_Code ["작업 큐 라이브러리"]
+                direction TB
+                QueueObj["BullMQ: simSaaSJobQueue"]
+                WorkerObj["BullMQ: simSaaSWorker"]
+            end
+        end
 
-    CLI -.-> WebFramework
-    BullMQ -.-> ORM
+        Fastify -- "호스팅 및 실행" --> TRPC
+        Fastify -- "호스팅 및 실행" --> WorkerObj
+
+        TRPC -- "API 요청 처리" --> Prisma
+        TRPC -- "작업 등록 요청" --> QueueObj
+
+        WorkerObj -- "DB 작업" --> Prisma
+    end
+
+    subgraph External_Services ["외부 서비스"]
+        direction TB
+        PostgreSQL["PostgreSQL 데이터베이스"]
+        Redis["Redis (작업 큐 저장소 및 브로커)"]
+    end
+
+    Prisma -- "데이터 접근" --> PostgreSQL
+
+    QueueObj -- "작업 정보를 Redis에 전송" --> Redis
+    WorkerObj -- "처리할 작업을 Redis에서 가져옴" --> Redis
+
+
+    subgraph CLI_Tool_Client_Side ["Client-Side Tool"]
+        CLI["Commander.js CLI"]
+        TRPCClient["tRPC Client"]
+        CLI --> TRPCClient
+        TRPCClient -- "API 호출" --> TRPC
+    end
 ```
 
 ## 데이터베이스 설계
