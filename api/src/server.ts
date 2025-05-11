@@ -1,39 +1,55 @@
 // api/src/server.ts
-import fastify from 'fastify'
-import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
+import prisma from '@/lib/prisma'
+import { simSaaSJobQueue } from '@/lib/queue'
+import bullMQPlugin from '@/plugins/bullmq'
+import { appRouter } from '@/router'
+import type { Context } from '@/trpc'
 import cors from '@fastify/cors'
-import { appRouter } from '@/router' // Root AppRouter
-import { createContext } from '@/trpc' // tRPC Context 생성 함수
+import type { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify'
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
+import fastify from 'fastify'
 
 const server = fastify({
-  // Fastify 로거 설정 (개발 시 유용)
   logger: {
     transport: {
-      target: 'pino-pretty', // pino-pretty 설치 필요: pnpm add -D pino-pretty --filter api
+      target: 'pino-pretty',
       options: {
         translateTime: 'HH:MM:ss Z',
         ignore: 'pid,hostname',
       },
     },
   },
-  maxParamLength: 5000, // URL 파라미터 최대 길이 (필요에 따라 조절)
+  maxParamLength: 5000,
 })
 
-// CORS 설정 (필요에 따라 옵션 조정)
+// CORS 설정
 server.register(cors, {
-  origin: '*', // 실제 프로덕션에서는 특정 도메인으로 제한하는 것이 좋습니다.
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 })
 
+// BullMQ 플러그인 등록
+// 이 플러그인은 Worker를 시작하고, 서버 종료 시 리소스를 정리합니다.
+server.register(bullMQPlugin)
+
 // tRPC 플러그인 등록
 server.register(fastifyTRPCPlugin, {
-  prefix: '/trpc', // tRPC API 엔드포인트 prefix (예: /trpc/project.create)
+  prefix: '/trpc',
   trpcOptions: {
     router: appRouter,
-    createContext,
-    onError: ({ path, error }: { path?: string; error: Error }) => {
+    createContext: ({ req, res }: CreateFastifyContextOptions): Context => {
+      // 여기서 직접 컨텍스트 객체를 생성하여 반환합니다.
+      // trpc.ts에 정의된 Context 타입과 일치해야 합니다.
+      return {
+        req,
+        res,
+        prisma,
+        simSaaSJobQueue,
+      }
+    },
+    onError({ path, error }: { path: any; error: any }) {
       console.error(`Error in tRPC handler on path '${path}':`, error)
-      // 여기에 에러 로깅 서비스 연동 가능
+      // 필요시 여기에 외부 로깅 서비스 연동
     },
   },
 })

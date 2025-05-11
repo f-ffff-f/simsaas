@@ -1,11 +1,16 @@
 import server from '@/server' // Fastify 서버 인스턴스
 import dotenv from 'dotenv'
+import path from 'path'
 export { AppRouter } from '@/router'
 
-dotenv.config()
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-const PORT = parseInt(process.env.PORT || '3001', 10)
-const HOST = process.env.HOST || '0.0.0.0' // 모든 IP에서 접속 허용
+if (!process.env.PORT || !process.env.HOST) {
+  throw new Error('PORT and HOST must be set')
+}
+
+const PORT = parseInt(process.env.PORT)
+const HOST = process.env.HOST
 
 const start = async () => {
   try {
