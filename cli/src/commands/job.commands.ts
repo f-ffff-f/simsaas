@@ -121,9 +121,10 @@ async function submitJobAction(options: { mesh: string }, command: Command) {
     const newJob = await trpcClient.job.submit.mutate({ meshId })
 
     console.log('\n=== 작업 제출 완료 ===')
-    console.log(`  생성된 작업 ID: ${newJob.id}`)
-    console.log(`  상태: ${newJob.status}`)
-    console.log(`  Mesh ID: ${newJob.meshId}`)
+    console.log(`  생성된 작업 ID: ${newJob.jobId}`)
+    console.log(`  메쉬 ID: ${newJob.meshId}`)
+    console.log(`  상태: ${newJob.currentStatus}`)
+    console.log(`  BullMQ 작업 ID: ${newJob.bullMQJobId}`)
     console.log('====================\n')
   } catch (error: any) {
     console.error(`메쉬 ID ${meshId} 작업 제출 중 오류가 발생했습니다:`)
