@@ -1,4 +1,5 @@
 # CAE software backend workflow
+![화면 기록 2025-05-12 23 20 17](https://github.com/user-attachments/assets/85653d72-cc5e-43db-8406-e7d456b9af1e)
 프로젝트 생성 => 형상 업로드 => 메쉬 생성 => 해석 실행 => 보고서 생성 흐름을 백엔드로 구현한 프로젝트입니다.
 
 ## 설계
