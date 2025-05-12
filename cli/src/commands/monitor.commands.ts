@@ -2,23 +2,6 @@ import { Command, OptionValues } from 'commander'
 import { trpcClient } from '../utils/trpc' // trpcClient 경로 확인 필요
 import blessed from 'blessed'
 import contrib from 'blessed-contrib'
-import type { JobListJob } from 'api/src/schemas/monitor.schema' // API 스키마 타입 가져오기 (경로 확인 필요)
-import { JobStatus } from '@prisma/client' // JobStatus enum 가져오기 (경로 확인 필요)
-
-// JobStatus를 색상 코드로 변환 (blessed 색상 코드)
-function statusToColor(status: JobStatus): string {
-  switch (status) {
-    case JobStatus.SUCCESS:
-      return 'green'
-    case JobStatus.RUNNING:
-      return 'blue'
-    case JobStatus.FAILED:
-      return 'red'
-    case JobStatus.PENDING:
-    default:
-      return 'yellow'
-  }
-}
 
 // 'monitor' 명령어의 액션 핸들러
 async function monitorAction(options: OptionValues, command: Command) {
@@ -62,18 +45,12 @@ async function monitorAction(options: OptionValues, command: Command) {
   const fetchAndUpdateJobList = async () => {
     try {
       // getJobList API 호출 (기본 옵션: 최신 20개)
-      const jobList: (JobListJob | null)[] =
-        await trpcClient.monitor.getJobList.query({})
+      const jobList = await trpcClient.monitor.getJobList.query({})
 
       // 테이블 데이터 형식으로 변환: [[col1, col2, ...], ...]
       const tableData = jobList.map(job => {
         if (!job) return null
 
-        const statusString = job.status // PENDING, RUNNING 등
-        // 상태 문자열에 색상 입히기 (blessed 태그 사용)
-        const coloredStatus = `{${statusToColor(
-          statusString
-        )}-fg}${statusString}{/}`
         const createdAtString = job.createdAt
           ? new Date(job.createdAt).toLocaleString()
           : 'N/A'
@@ -81,14 +58,14 @@ async function monitorAction(options: OptionValues, command: Command) {
         return [
           job.id.substring(0, 8) + '...', // ID 일부만 표시
           job.name,
-          coloredStatus,
+          job.state,
           createdAtString,
         ]
       })
 
       // 테이블 위젯 데이터 업데이트
       jobTable.setData({
-        headers: ['ID', 'Name', 'Status', 'Created At'],
+        headers: ['ID', 'Name', 'State', 'Created At'],
         data: tableData,
       })
 

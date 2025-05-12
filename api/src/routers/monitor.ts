@@ -1,5 +1,5 @@
 import {
-  BullMQJobStatus,
+  bullMQJobStatuses,
   getJobListInputSchema,
   getJobLogsInputSchema,
   jobDataSchema,
@@ -8,32 +8,9 @@ import {
   jobLogsSchema,
 } from '@/schemas/monitor.schema'
 import { publicProcedure, router } from '@/trpc'
-import { JobStatus } from '@prisma/client'
 import { TRPCError } from '@trpc/server'
-import type { Job as BullMQJob } from 'bullmq'
+import type { Job as BullMQJob, JobState } from 'bullmq'
 import { z } from 'zod'
-
-// BullMQ Job 객체를 Prisma JobStatus enum으로 변환하는 헬퍼 함수
-async function getPrismaJobStatus(job: BullMQJob): Promise<JobStatus> {
-  const state = await job.getState()
-  switch (state) {
-    case 'completed':
-      return JobStatus.SUCCESS
-    case 'failed':
-      return JobStatus.FAILED
-    case 'active':
-      return JobStatus.RUNNING
-    case 'waiting':
-    case 'waiting-children':
-    case 'delayed':
-      return JobStatus.PENDING
-    default:
-      console.warn(
-        `Unknown BullMQ job state: ${state} for job ID ${job.id}. Mapping to PENDING.`
-      )
-      return JobStatus.PENDING
-  }
-}
 
 // BullMQ Job 객체를 JobListJob (목록 표시용) 타입으로 변환하는 헬퍼 함수
 async function bullMQJobToJobListJob(
@@ -41,13 +18,13 @@ async function bullMQJobToJobListJob(
 ): Promise<JobListJob | null> {
   if (!job || !job.id || !job.timestamp) return null // ID나 timestamp가 없는 경우 목록에서 제외
 
-  const status = await getPrismaJobStatus(job)
+  const state = (await job.getState()) as JobState
   const validatedData = jobDataSchema.safeParse(job.data)
 
   return {
     id: job.id,
     name: job.name,
-    status: status,
+    state: state,
     createdAt: job.timestamp, // 생성 시간 (epoch ms)
     meshId: validatedData.success ? validatedData.data.meshId : undefined,
   }
@@ -56,27 +33,14 @@ async function bullMQJobToJobListJob(
 export const monitorRouter = router({
   // 작업 목록 조회
   getJobList: publicProcedure
-    .input(getJobListInputSchema) // 새로운 입력 스키마 사용
-    .output(z.array(jobListJobSchema.nullable())) // 새로운 출력 스키마 사용
+    .input(getJobListInputSchema)
+    .output(z.array(jobListJobSchema))
     .query(async ({ input, ctx }) => {
-      const { statuses, start = 0, end = 19, asc = false } = input
-
-      // statuses가 제공되지 않으면 기본 상태 목록 사용 (예: 활성, 대기, 실패)
-      const targetStatuses =
-        statuses && statuses.length > 0
-          ? statuses
-          : ([
-              'active',
-              'waiting',
-              'failed',
-              'delayed',
-              'paused',
-              'waiting-children',
-            ] as BullMQJobStatus[]) // 기본 상태 목록
+      const { start = 0, end = 19, asc = true } = input
 
       try {
         const jobs = await ctx.simSaaSJobQueue.getJobs(
-          targetStatuses,
+          bullMQJobStatuses,
           start,
           end,
           asc
@@ -85,10 +49,24 @@ export const monitorRouter = router({
         const jobList = await Promise.all(
           jobs.map(job => bullMQJobToJobListJob(job))
         )
-        return jobList.filter((job): job is JobListJob => job !== null) // null이 아닌 작업만 반환
+
+        // null이 아닌 작업만 필터링하고 생성 날짜(createdAt)를 기준으로 내림차순 정렬
+        const filteredList = jobList.filter(
+          (job: JobListJob | null) => job !== null
+        ) as JobListJob[]
+
+        filteredList.sort((a, b) => {
+          const dateA = a.createdAt || 0
+          const dateB = b.createdAt || 0
+          return dateB - dateA
+        })
+
+        return filteredList
       } catch (error) {
         console.error(
-          `Failed to get job list for statuses [${targetStatuses.join(', ')}]:`,
+          `Failed to get job list for states [${bullMQJobStatuses.join(
+            ', '
+          )}]:`,
           error
         )
         throw new TRPCError({
