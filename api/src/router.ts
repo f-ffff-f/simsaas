@@ -4,6 +4,7 @@ import { projectRouter } from '@/routers/project'
 import { jobRouter } from '@/routers/job'
 import { geometryRouter } from '@/routers/geometry'
 import { meshRouter } from '@/routers/mesh'
+import { monitorRouter } from '@/routers/monitor'
 
 // 여러 라우터들을 여기에 병합합니다.
 // 결과: baseURL/trpc/...
@@ -12,6 +13,7 @@ export const appRouter = router({
   job: jobRouter, // 'job' 네임스페이스로 jobRouter를 마운트
   geometry: geometryRouter, // 'geometry' 네임스페이스로 geometryRouter 마운트
   mesh: meshRouter, // 'mesh' 네임스페이스로 meshRouter를 마운트
+  monitor: monitorRouter, // 'monitor' 네임스페이스로 monitorRouter를 마운트
   // 예: health: publicProcedure.query(() => 'OK'), // 간단한 헬스 체크
 })
 
