@@ -170,9 +170,9 @@ export const simSaaSWorker = new Worker<ProcessMeshJobData>(
     connection: createRedisInstance(),
 
     // 아래는 워커의 동시 작업 처리 수 및 성능 관련 옵션들입니다.
-    concurrency: 5,
+    concurrency: 10,
     limiter: {
-      max: 10,
+      max: 5,
       duration: 1000,
     },
     metrics: {

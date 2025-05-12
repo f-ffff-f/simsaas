@@ -1,6 +1,7 @@
 import { registerGeometryCommands } from '@/commands/geometry.commands'
 import { registerJobCommands } from '@/commands/job.commands'
 import { registerMeshCommands } from '@/commands/mesh.commands'
+import { registerMonitorCommand } from '@/commands/monitor.commands'
 import { registerProjectCommands } from '@/commands/project.commands'
 import { Command } from 'commander'
 
@@ -16,6 +17,7 @@ registerProjectCommands(program)
 registerJobCommands(program)
 registerGeometryCommands(program)
 registerMeshCommands(program)
+registerMonitorCommand(program)
 
 async function main() {
   await program.parseAsync(process.argv)

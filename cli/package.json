@@ -17,11 +17,15 @@
     "dependencies": {
         "@trpc/client": "^10.45.2",
         "api": "workspace:*",
+        "blessed": "^0.1.81",
+        "blessed-contrib": "^4.11.0",
         "commander": "^12.1.0",
         "dotenv": "^16.5.0",
-        "superjson": "1.13.3"
+        "superjson": "1.13.3",
+        "@prisma/client": "^5.22.0"
     },
     "devDependencies": {
+        "@types/blessed": "^0.1.25",
         "@types/commander": "^2.5.0",
         "tsx": "^4.16.2"
     }
