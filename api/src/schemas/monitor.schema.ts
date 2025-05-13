@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 // BullMQ 작업 상태 문자열 배열입니다.
 export const bullMQJobStatuses = [
-  'completed',
   'waiting',
   'active',
   'delayed',
