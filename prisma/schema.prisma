@@ -18,14 +18,14 @@ model Project {
   name       String
   geometries Geometry[] // Project는 여러 Geometry를 가질 수 있음
 
-  @@map("projects") // 테이블명을 명시적으로 projects로 지정 (선택 사항)
+  @@map("projects")
 }
 
 model Geometry {
   id        Int    @id @default(autoincrement())
   projectId Int // Foreign Key
-  fileUrl   String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade) // Project와의 관계 정의. Project 삭제 시 연관 Geometry도 삭제
+  fileUrl   String // CAD 파일 경로
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   meshes    Mesh[] // Geometry는 여러 Mesh를 가질 수 있음
 
   @@map("geometries")
@@ -34,31 +34,36 @@ model Geometry {
 model Mesh {
   id         Int      @id @default(autoincrement())
   geometryId Int // Foreign Key
-  resolution Int
-  geometry   Geometry @relation(fields: [geometryId], references: [id], onDelete: Cascade) // Geometry와의 관계 정의. Geometry 삭제 시 연관 Mesh도 삭제
-  jobs       Job[] // Mesh는 여러 Job에 사용될 수 있음
+  resolution Int    // 이 필드는 현재 워크플로우에서 크게 사용되지 않을 수 있지만 유지합니다.
+  fileUrl    String   @default("placeholder_mesh_url.msh") // 생성된 메쉬 파일의 경로를 저장할 필드
+  geometry   Geometry @relation(fields: [geometryId], references: [id], onDelete: Cascade)
+  jobs       Job[]    // Mesh는 여러 Job에 사용될 수 있음
 
   @@map("meshes")
 }
 
 model Job {
-  id         BigInt    @id @default(autoincrement())
-  meshId     Int // Foreign Key
+  id         BigInt    @id @default(autoincrement()) // BullMQ Job ID와 별개로 DB Job ID 유지
+  meshId     Int       // Foreign Key
   status     JobStatus @default(PENDING)
   startedAt  DateTime?
-  finishedAt DateTime?
-  mesh       Mesh      @relation(fields: [meshId], references: [id], onDelete: Cascade) // Mesh와의 관계 정의. Mesh 삭제 시 연관 Job도 삭제
-  result     Result? // Job은 하나 혹은 0개의 Result를 가질 수 있음 (1:0 or 1:1 관계)
+  finishedAt DateTime? // Prisma 스키마에서는 finishedAt으로 되어있네요. BullMQ에서는 completedAt을 사용했었습니다. 일관성 확인 필요.
+  mesh       Mesh      @relation(fields: [meshId], references: [id], onDelete: Cascade)
+  result     Result?
+
+  // BullMQ Job ID를 저장하기 위한 필드 (이전에 논의되었던 내용)
+  // 만약 BullMQ Job ID를 DB에 저장하고 싶다면 이 필드를 추가합니다.
+  // bullMQJobId String? @unique
 
   @@map("jobs")
 }
 
 model Result {
   id      Int    @id @default(autoincrement())
-  jobId   BigInt @unique // Job과의 1:1 관계를 위해 jobId를 unique로 설정
+  jobId   BigInt @unique
   fileUrl String
-  metrics Json
-  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade) // Job과의 관계 정의. Job 삭제 시 연관 Result도 삭제
+  metrics Json   // Json 타입은 PostgreSQL에서 지원됩니다.
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@map("results")
 }

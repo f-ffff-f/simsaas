@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "meshes" ALTER COLUMN "fileUrl" DROP NOT NULL,
+ALTER COLUMN "fileUrl" DROP DEFAULT;
